@@ -4,7 +4,7 @@ class ShoppingListSorter {
         this.itemsMap = new Map();
         this.sectionsList = [];
         this.sectionsMap = new Map();
-        this.debug = true;
+        this.debug = false;
         this.isReorderMode = false;
         
         this.initializeData();
@@ -27,7 +27,6 @@ class ShoppingListSorter {
         ];
         
         // Default items (same as Java version)
-        /*
         const defaultItems = {
             'broccoli': 'fruit and veg',
             'cauliflower': 'fruit and veg',
@@ -50,8 +49,6 @@ class ShoppingListSorter {
             'greek yogurt': 'dairy',
             'drumsticks': 'ice cream'
         };
-        */
-        const defaultItems = {};
         
         this.itemsMap = new Map(Object.entries(defaultItems));
         this.buildSectionsMap();
