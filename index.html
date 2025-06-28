@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopping List Sorter</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🛒 Shopping List Sorter</h1>
+            <p>Organize your shopping list by sections</p>
+        </header>
+
+        <main>
+            <div class="text-areas-container">
+                <div class="text-area-wrapper">
+                    <label for="input-area">Input Items (one per line):</label>
+                    <textarea id="input-area" placeholder="Enter your shopping items here...&#10;broccoli&#10;milk&#10;bread&#10;..."></textarea>
+                </div>
+                
+                <div class="text-area-wrapper">
+                    <label for="output-area">Sorted Items:</label>
+                    <textarea id="output-area" readonly placeholder="Sorted items will appear here..."></textarea>
+                </div>
+            </div>
+
+            <div class="button-container">
+                <button id="sort-btn" class="btn btn-primary">Sort Items</button>
+                <button id="sections-btn" class="btn btn-secondary">Manage Sections</button>
+                <button id="items-btn" class="btn btn-secondary">Manage Items</button>
+                <button id="clear-btn" class="btn btn-outline">Clear All</button>
+            </div>
+        </main>
+
+        <!-- Section Management Modal -->
+        <div id="sections-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Manage Sections</h2>
+                    <div class="modal-actions">
+                        <div id="reorder-controls" class="reorder-controls">
+                            <button id="save-reorder-btn" class="btn btn-small btn-success">Save Order</button>
+                            <button id="exit-reorder-btn" class="btn btn-small btn-warning">Exit Reorder</button>
+                        </div>
+                        <button id="reorder-sections-btn" class="btn btn-small btn-outline">Reorder Sections</button>
+                        <span class="close">&times;</span>
+                    </div>
+                </div>
+                <div class="modal-body">
+                    <div class="section-controls">
+                        <div class="add-section">
+                            <input type="text" id="new-section-input" placeholder="New section name">
+                            <button id="add-section-btn" class="btn btn-primary">Add Section</button>
+                        </div>
+                    </div>
+                    
+                    <div class="sections-list">
+                        <h3>Current Sections:</h3>
+                        <div id="sections-container"></div>
+                    </div>
+                    
+                    <div class="items-by-section">
+                        <h3>Items by Section:</h3>
+                        <div id="items-container"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Similar Item Modal -->
+        <div id="similar-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Similar Item Found</h2>
+                    <span class="close">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <p id="similar-message"></p>
+                    <div class="button-container">
+                        <button id="yes-btn" class="btn btn-primary">Yes, use this item</button>
+                        <button id="no-btn" class="btn btn-secondary">No, keep original</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- New Section Modal -->
+        <div id="new-section-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Select Section for Item</h2>
+                    <span class="close">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <p id="section-prompt-text">Select a section for this item:</p>
+                    
+                    <div class="section-selection">
+                        <div class="existing-sections">
+                            <h3>Existing Sections:</h3>
+                            <div id="existing-sections-list" class="sections-list-select"></div>
+                        </div>
+                        
+                        <div class="new-section-option">
+                            <h3>Or Create New Section:</h3>
+                            <div class="add-section">
+                                <input type="text" id="new-section-name" placeholder="New section name">
+                                <button id="create-section-btn" class="btn btn-primary">Create & Select</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="button-container">
+                        <button id="cancel-section-btn" class="btn btn-secondary">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Items Management Modal -->
+        <div id="items-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Manage Items</h2>
+                    <div class="modal-actions">
+                        <button id="add-item-btn" class="btn btn-small btn-primary">Add Item</button>
+                        <span class="close">&times;</span>
+                    </div>
+                </div>
+                <div class="modal-body">
+                    <div class="items-controls">
+                        <div class="search-filter">
+                            <input type="text" id="item-search" placeholder="Search items...">
+                            <select id="section-filter">
+                                <option value="">All Sections</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="items-list">
+                        <h3>Items Database:</h3>
+                        <div id="items-container-manage"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Edit Item Modal -->
+        <div id="edit-item-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Edit Item</h2>
+                    <span class="close">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <div class="edit-item-form">
+                        <div class="form-group">
+                            <label for="edit-item-name">Item Name:</label>
+                            <input type="text" id="edit-item-name" placeholder="Item name">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="edit-item-section">Section:</label>
+                            <select id="edit-item-section">
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="button-container">
+                        <button id="save-item-btn" class="btn btn-primary">Save Changes</button>
+                        <button id="delete-item-btn" class="btn btn-danger">Delete Item</button>
+                        <button id="cancel-edit-btn" class="btn btn-secondary">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Item Modal -->
+        <div id="add-item-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Add New Item</h2>
+                    <span class="close">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <div class="add-item-form">
+                        <div class="form-group">
+                            <label for="new-item-name">Item Name:</label>
+                            <input type="text" id="new-item-name" placeholder="Enter item name">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="new-item-section">Section:</label>
+                            <select id="new-item-section">
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="button-container">
+                        <button id="confirm-add-item-btn" class="btn btn-primary">Add Item</button>
+                        <button id="cancel-add-item-btn" class="btn btn-secondary">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html> 
