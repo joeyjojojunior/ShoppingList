@@ -27,11 +27,20 @@
             </div>
 
             <div class="button-container">
-                <button id="sort-btn" class="btn btn-primary">Sort Items</button>
-                <button id="sections-btn" class="btn btn-secondary">Manage Sections</button>
-                <button id="items-btn" class="btn btn-secondary">Manage Items</button>
-                <button id="clear-btn" class="btn btn-outline">Clear All</button>
+                <div class="button-row">
+                    <button id="sort-btn" class="btn btn-primary">Sort Items</button>
+                    <button id="sections-btn" class="btn btn-secondary">Manage Sections</button>
+                    <button id="items-btn" class="btn btn-secondary">Manage Items</button>
+                </div>
+                <div class="button-row">
+                    <button id="export-btn" class="btn btn-outline">Export Data</button>
+                    <button id="import-btn" class="btn btn-outline">Import Data</button>
+                    <button id="clear-btn" class="btn btn-outline">Clear All</button>
+                </div>
             </div>
+            
+            <!-- Hidden file input for import functionality -->
+            <input type="file" id="import-file-input" accept=".json" style="display: none;">
         </main>
 
         <!-- Section Management Modal -->

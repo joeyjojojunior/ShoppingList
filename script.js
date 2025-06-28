@@ -4,7 +4,7 @@ class ShoppingListSorter {
         this.itemsMap = new Map();
         this.sectionsList = [];
         this.sectionsMap = new Map();
-        this.debug = true;
+        this.debug = false;
         this.isReorderMode = false;
         
         this.initializeData();
@@ -75,6 +75,19 @@ class ShoppingListSorter {
         
         document.getElementById('clear-btn').addEventListener('click', () => {
             this.clearAll();
+        });
+
+        // Export and import functionality
+        document.getElementById('export-btn').addEventListener('click', () => {
+            this.exportData();
+        });
+
+        document.getElementById('import-btn').addEventListener('click', () => {
+            this.importData();
+        });
+
+        document.getElementById('import-file-input').addEventListener('change', (e) => {
+            this.handleImportFile(e);
         });
 
         // Auto-resize textareas
@@ -1051,6 +1064,85 @@ class ShoppingListSorter {
                 message.remove();
             }
         }, 5000);
+    }
+
+    // Export data to JSON file
+    exportData() {
+        try {
+            const exportData = {
+                items: Array.from(this.itemsMap.entries()),
+                sections: this.sectionsList,
+                exportDate: new Date().toISOString(),
+                version: '1.0'
+            };
+            
+            const dataStr = JSON.stringify(exportData, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            
+            // Create download link
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `shopping-list-backup-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            
+            this.showMessage('Data exported successfully!', 'success');
+        } catch (error) {
+            console.error('Error exporting data:', error);
+            this.showMessage('Error exporting data. Please try again.', 'error');
+        }
+    }
+
+    // Import data from file
+    importData() {
+        document.getElementById('import-file-input').click();
+    }
+
+    // Handle imported file
+    handleImportFile(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const importData = JSON.parse(e.target.result);
+                
+                // Validate the imported data structure
+                if (!importData.items || !importData.sections) {
+                    throw new Error('Invalid backup file format');
+                }
+                
+                // Confirm import with user
+                const itemCount = importData.items.length;
+                const sectionCount = importData.sections.length;
+                const confirmMessage = `This will replace your current data with:\n` +
+                    `• ${itemCount} items\n` +
+                    `• ${sectionCount} sections\n\n` +
+                    `Are you sure you want to continue?`;
+                
+                if (confirm(confirmMessage)) {
+                    // Import the data
+                    this.itemsMap = new Map(importData.items);
+                    this.sectionsList = importData.sections;
+                    this.buildSectionsMap();
+                    this.saveData();
+                    
+                    this.showMessage(`Data imported successfully! ${itemCount} items and ${sectionCount} sections loaded.`, 'success');
+                }
+            } catch (error) {
+                console.error('Error importing data:', error);
+                this.showMessage('Error importing data. Please check that the file is a valid backup file.', 'error');
+            }
+        };
+        
+        reader.readAsText(file);
+        
+        // Clear the file input for future imports
+        event.target.value = '';
     }
 }
 

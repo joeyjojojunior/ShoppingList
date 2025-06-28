@@ -103,6 +103,13 @@ textarea#input-area:focus, textarea#output-area:focus {
 /* Buttons */
 .button-container {
     display: flex;
+    flex-direction: column;
+    gap: 15px;
+    align-items: center;
+}
+
+.button-row {
+    display: flex;
     gap: 15px;
     justify-content: center;
     flex-wrap: wrap;
@@ -323,8 +330,13 @@ textarea#input-area:focus, textarea#output-area:focus {
     }
     
     .button-container {
+        gap: 10px;
+    }
+    
+    .button-row {
         flex-direction: column;
         align-items: center;
+        width: 100%;
     }
     
     .btn {
