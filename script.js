@@ -26,7 +26,7 @@ class ShoppingListSorter {
             'dairy', 'ice cream'
         ];
         
-        // Default items (same as Java version)
+        // Default items (same as Java version) - stored in lowercase
         const defaultItems = {
             'broccoli': 'fruit and veg',
             'cauliflower': 'fruit and veg',
@@ -367,7 +367,8 @@ class ShoppingListSorter {
         const shoppingListMap = new Map();
         
         for (const item of shoppingList) {
-            const section = this.itemsMap.get(item);
+            const itemLower = item.toLowerCase();
+            const section = this.itemsMap.get(itemLower);
             let priority;
             
             if (section && this.sectionsMap.has(section)) {
@@ -393,10 +394,11 @@ class ShoppingListSorter {
         
         for (let i = 0; i < processedList.length; i++) {
             const item = processedList[i];
+            const itemLower = item.toLowerCase();
             
-            if (!this.itemsMap.has(item)) {
+            if (!this.itemsMap.has(itemLower)) {
                 // Check for similar items
-                const similarItem = this.findSimilarItem(item);
+                const similarItem = this.findSimilarItem(itemLower);
                 
                 if (similarItem) {
                     const useSimilar = await this.showSimilarItemDialog(item, similarItem);
@@ -409,8 +411,8 @@ class ShoppingListSorter {
                 // Prompt for section
                 const selectedSection = await this.promptForSection(item);
                 if (selectedSection) {
-                    // User selected a section, add item to database
-                    this.itemsMap.set(item, selectedSection);
+                    // User selected a section, add item to database (store in lowercase)
+                    this.itemsMap.set(itemLower, selectedSection);
                     this.saveData();
                 }
                 // If selectedSection is null, user canceled - skip adding to database but continue with sort
@@ -426,7 +428,7 @@ class ShoppingListSorter {
         let bestSimilarity = 0.7; // Minimum similarity threshold
         
         for (const [item] of this.itemsMap) {
-            const similarity = this.calculateSimilarity(targetItem.toLowerCase(), item.toLowerCase());
+            const similarity = this.calculateSimilarity(targetItem, item);
             if (similarity > bestSimilarity) {
                 bestSimilarity = similarity;
                 bestMatch = item;
@@ -536,11 +538,11 @@ class ShoppingListSorter {
     // Create new section
     createNewSection() {
         const input = document.getElementById('new-section-name');
-        const sectionName = input.value.trim();
+        const sectionName = input.value.trim().toLowerCase();
         
         if (sectionName) {
             if (!this.sectionsList.includes(sectionName)) {
-                this.sectionsList.push(sectionName);
+                this.sectionsList.unshift(sectionName);
                 this.buildSectionsMap();
                 this.saveData();
             }
@@ -557,7 +559,7 @@ class ShoppingListSorter {
     handleExistingSectionSelection() {
         const selectedSection = document.querySelector('.section-option.selected');
         if (selectedSection) {
-            const sectionName = selectedSection.textContent;
+            const sectionName = selectedSection.textContent.toLowerCase();
             this.closeModal(document.getElementById('new-section-modal'));
             if (this.currentSectionCallback) {
                 this.currentSectionCallback(sectionName);
@@ -672,10 +674,10 @@ class ShoppingListSorter {
     // Add section
     addSection() {
         const input = document.getElementById('new-section-input');
-        const sectionName = input.value.trim();
+        const sectionName = input.value.trim().toLowerCase();
         
         if (sectionName && !this.sectionsList.includes(sectionName)) {
-            this.sectionsList.push(sectionName);
+            this.sectionsList.unshift(sectionName);
             this.buildSectionsMap();
             this.saveData();
             this.populateSectionsModal();
@@ -688,14 +690,15 @@ class ShoppingListSorter {
 
     // Delete section
     deleteSection(sectionName) {
+        const sectionNameLower = sectionName.toLowerCase();
         if (confirm(`Are you sure you want to delete the section '${sectionName}'?`)) {
             // Remove section from list
-            this.sectionsList = this.sectionsList.filter(s => s !== sectionName);
+            this.sectionsList = this.sectionsList.filter(s => s !== sectionNameLower);
             this.buildSectionsMap();
             
             // Remove items from this section
             for (const [item, section] of this.itemsMap) {
-                if (section === sectionName) {
+                if (section === sectionNameLower) {
                     this.itemsMap.delete(item);
                 }
             }
@@ -708,10 +711,11 @@ class ShoppingListSorter {
 
     // Rename section
     renameSection(oldSectionName) {
+        const oldSectionNameLower = oldSectionName.toLowerCase();
         const newSectionName = prompt(`Enter new name for '${oldSectionName}':`, oldSectionName);
         
         if (newSectionName && newSectionName.trim() && newSectionName !== oldSectionName) {
-            const trimmedName = newSectionName.trim();
+            const trimmedName = newSectionName.trim().toLowerCase();
             
             if (this.sectionsList.includes(trimmedName)) {
                 this.showMessage(`Section '${trimmedName}' already exists.`, 'error');
@@ -719,13 +723,13 @@ class ShoppingListSorter {
             }
             
             // Update section list
-            const index = this.sectionsList.indexOf(oldSectionName);
+            const index = this.sectionsList.indexOf(oldSectionNameLower);
             this.sectionsList[index] = trimmedName;
             this.buildSectionsMap();
             
             // Update items map
             for (const [item, section] of this.itemsMap) {
-                if (section === oldSectionName) {
+                if (section === oldSectionNameLower) {
                     this.itemsMap.set(item, trimmedName);
                 }
             }
@@ -831,7 +835,7 @@ class ShoppingListSorter {
         const newOrder = [];
         
         sectionsContainer.querySelectorAll('.section-item').forEach(item => {
-            const sectionName = item.querySelector('.section-name').textContent;
+            const sectionName = item.querySelector('.section-name').textContent.toLowerCase();
             newOrder.push(sectionName);
         });
         
@@ -886,7 +890,7 @@ class ShoppingListSorter {
         const itemsArray = Array.from(this.itemsMap.entries()).sort((a, b) => a[0].localeCompare(b[0]));
         
         itemsArray.forEach(([itemName, section]) => {
-            // Apply filters
+            // Apply filters (case-insensitive search)
             if (searchTerm && !itemName.toLowerCase().includes(searchTerm)) return;
             if (sectionFilter && section !== sectionFilter) return;
             
@@ -939,12 +943,13 @@ class ShoppingListSorter {
             return;
         }
         
-        if (this.itemsMap.has(itemName)) {
+        const itemNameLower = itemName.toLowerCase();
+        if (this.itemsMap.has(itemNameLower)) {
             this.showMessage(`Item '${itemName}' already exists.`, 'error');
             return;
         }
         
-        this.itemsMap.set(itemName, section);
+        this.itemsMap.set(itemNameLower, section);
         this.saveData();
         
         this.closeModal(document.getElementById('add-item-modal'));
@@ -970,8 +975,9 @@ class ShoppingListSorter {
             editItemSection.appendChild(option);
         });
         
-        // Store current item for reference
+        // Store current item for reference (store original case for display)
         this.currentEditingItem = itemName;
+        this.currentEditingItemLower = itemName.toLowerCase();
         
         this.showModal(document.getElementById('edit-item-modal'));
     }
@@ -980,20 +986,22 @@ class ShoppingListSorter {
         const newName = document.getElementById('edit-item-name').value.trim();
         const newSection = document.getElementById('edit-item-section').value;
         const oldName = this.currentEditingItem;
+        const oldNameLower = this.currentEditingItemLower;
         
         if (!newName) {
             this.showMessage('Please enter an item name.', 'error');
             return;
         }
         
-        if (newName !== oldName && this.itemsMap.has(newName)) {
+        const newNameLower = newName.toLowerCase();
+        if (newNameLower !== oldNameLower && this.itemsMap.has(newNameLower)) {
             this.showMessage(`Item '${newName}' already exists.`, 'error');
             return;
         }
         
         // Remove old item and add new one
-        this.itemsMap.delete(oldName);
-        this.itemsMap.set(newName, newSection);
+        this.itemsMap.delete(oldNameLower);
+        this.itemsMap.set(newNameLower, newSection);
         this.saveData();
         
         this.closeModal(document.getElementById('edit-item-modal'));
@@ -1003,8 +1011,9 @@ class ShoppingListSorter {
 
     deleteCurrentItem() {
         const itemName = this.currentEditingItem;
+        const itemNameLower = this.currentEditingItemLower;
         if (confirm(`Are you sure you want to delete '${itemName}'?`)) {
-            this.itemsMap.delete(itemName);
+            this.itemsMap.delete(itemNameLower);
             this.saveData();
             
             this.closeModal(document.getElementById('edit-item-modal'));
@@ -1014,8 +1023,9 @@ class ShoppingListSorter {
     }
 
     deleteItem(itemName) {
+        const itemNameLower = itemName.toLowerCase();
         if (confirm(`Are you sure you want to delete '${itemName}'?`)) {
-            this.itemsMap.delete(itemName);
+            this.itemsMap.delete(itemNameLower);
             this.saveData();
             
             this.populateItemsModal();
